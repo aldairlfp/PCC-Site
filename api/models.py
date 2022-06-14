@@ -1,14 +1,17 @@
-import sys, inspect
 from dateutil.tz import UTC
 
 from django.db import models
 
 from dateutil import rrule
 from datetime import datetime, timedelta
-
-from sklearn import neighbors
+from django.core.exceptions import ValidationError
 
 from .utils import date_compare
+
+
+def validate_null_strings(value):
+    if len(value) <= 0:
+        raise ValidationError('{} must not be null'.format(value))
 
 
 class Address(models.Model):
@@ -18,6 +21,14 @@ class Address(models.Model):
     neighborhood = models.CharField(max_length=100)
     corner_or_ave = models.CharField(max_length=100)
     apto = models.CharField('No. Y/O APTO', max_length=100)
+
+    def is_valid(self):
+        return len(self.street) > 0 or len(self.municipality) > 0 or len(self.province) > 0 or len(self.neighborhood) > 0 or len(self.corner_or_ave) > 0 or len(self.apto) > 0
+
+    def save(self, *args, **kwargs):
+        if not self.is_valid():
+            raise ValueError('Address must exist')
+        super().save(*args, **kwargs)
 
     def __str__(self) -> str:
         return '{} {} {} {}'.format(self.province, self.street, self.municipality, self.corner_or_ave)
@@ -31,6 +42,8 @@ class Address(models.Model):
 class Core(models.Model):
     code = models.CharField(primary_key=True, max_length=5)
     name = models.CharField(max_length=100)
+    municipality = models.CharField(max_length=100)
+    province = models.CharField(max_length=100)
     district = models.PositiveIntegerField()
     political_area = models.CharField(max_length=100)
     sector = models.CharField(max_length=100)
@@ -41,10 +54,10 @@ class Core(models.Model):
         return militant
 
     def __str__(self) -> str:
-        return self.core_name
+        return self.name
 
     class Meta:
-        db_table = 'core'    
+        db_table = 'core'
 
 
 class DeclarationDate(models.Model):
@@ -79,7 +92,7 @@ class Militant(models.Model):
     register_date = models.DateTimeField(default=datetime.now())
     core = models.ForeignKey(
         Core, related_name='militants', on_delete=models.CASCADE)
-    address = models.ForeignKey(Address, on_delete=models.CASCADE)
+    address = models.ForeignKey(Address, on_delete=models.CASCADE, null=True)
     declaration_date = models.ManyToManyField(
         DeclarationDate, through='PaymentDeclaration')
 
@@ -96,17 +109,18 @@ class Militant(models.Model):
         real_decla = PaymentDeclaration.real_payment_declaration(self)
 
         start = self.register_date
-        end = datetime.now(UTC) - timedelta(days = datetime.now(UTC).day - 1)
-        
+        end = datetime.now(UTC) - timedelta(days=datetime.now(UTC).day - 1)
+
         payments = []
         i_decla = 0
 
         for dt in rrule.rrule(rrule.MONTHLY, dtstart=start, until=end):
             backwardness = True
-            share = {'year': dt.year, 'month': dt.month, 'amount_payable': None, 'amount_paid': None}
+            share = {'year': dt.year, 'month': dt.month,
+                     'amount_payable': None, 'amount_paid': None}
             if i_decla < len(real_decla) and date_compare(dt, real_decla[i_decla]):
                 payments = Payment.objects.filter(
-                    payment_declaration = real_decla[i_decla])
+                    payment_declaration=real_decla[i_decla])
 
                 sum = 0
                 for pay in payments:
@@ -123,8 +137,16 @@ class Militant(models.Model):
 
         return arrears_fees
 
+    def is_valid(self):
+        return len(self.ci) > 0 and len(self.name) > 0 and len(self.second_lastname) > 0
+
+    def save(self, *args, **kwargs):
+        if not self.is_valid():
+            raise ValueError('Address must exist')
+        super().save(*args, **kwargs)
+    
     def __str__(self) -> str:
-        return self.militant_name
+        return self.name
 
     class Meta:
         db_table = 'militant'
@@ -178,6 +200,7 @@ class PaymentDeclaration(models.Model):
 
     def __str__(self) -> str:
         return self.militant.name + " salary of " + str(self.salary)
+
 
 class Payment(models.Model):
     payment_declaration = models.ForeignKey(

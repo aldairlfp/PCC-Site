@@ -177,11 +177,11 @@ class Militant_APIView(APIView):
 
     def get(self, request, format=None, *args, **kwargs):
         militant = self.get_queryset()
-        serializer = MilitantDeclarationsSerializer(militant, many=True)
+        serializer = MilitantSerializer(militant, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request, format=None):
-        serializer = MilitantSerializer(data=request.data)
+        serializer = MilitantPostSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)

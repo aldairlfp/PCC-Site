@@ -2,6 +2,7 @@ from django.urls import path
 from rest_framework.authtoken import views
 
 from .views import *
+from .upload import *
 
 app_name = 'api'
 
@@ -23,5 +24,6 @@ urlpatterns = [
     path('user/<int:pk>/', User_APIView_Detail.as_view()),
     path('group/', Group_APIView.as_view()),
     path('group/<int:pk>/', Group_APIViews_Details.as_view()),
-    path('token-auth/', views.obtain_auth_token)
+    path('token-auth/', views.obtain_auth_token),
+    path('upload-militant/', upload_data)
 ]

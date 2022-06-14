@@ -42,11 +42,16 @@ class MilitantSerializer(serializers.ModelSerializer):
         fields = ['ci', 'name', 'first_lastname',
                   'second_lastname', 'address']
 
+class MilitantPostSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Militant
+        fields = '__all__'
+
 
 class CoreSerializer(serializers.ModelSerializer):
     class Meta:
         model = Core
-        fields = ['code', 'name', 'district', 'political_area',
+        fields = ['code', 'name', 'municipality', 'province', 'district', 'political_area',
                   'sector', 'subordinate']
 
 
