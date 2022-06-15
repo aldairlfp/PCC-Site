@@ -5,6 +5,7 @@ from django.db import models
 from dateutil import rrule
 from datetime import datetime, timedelta
 from django.core.exceptions import ValidationError
+from django.core.validators import MinLengthValidator, MaxLengthValidator, MinValueValidator
 
 from .utils import date_compare
 
@@ -12,6 +13,14 @@ from .utils import date_compare
 def validate_null_strings(value):
     if len(value) <= 0:
         raise ValidationError('{} must not be null'.format(value))
+
+
+def validate_int_number(value):
+    try:
+        int(value)
+    except:
+        raise ValidationError(
+            'Must be a positive integer number')
 
 
 class Address(models.Model):
@@ -40,14 +49,33 @@ class Address(models.Model):
 
 
 class Core(models.Model):
-    code = models.CharField(primary_key=True, max_length=5)
-    name = models.CharField(max_length=100)
-    municipality = models.CharField(max_length=100)
-    province = models.CharField(max_length=100)
-    district = models.PositiveIntegerField()
-    political_area = models.CharField(max_length=100)
-    sector = models.CharField(max_length=100)
-    subordinate = models.CharField(max_length=100)
+    code = models.CharField(primary_key=True, max_length=5, validators=[
+                            MinLengthValidator(
+                                5, message='Min length of code must have more than 4 numbers'),
+                            MaxLengthValidator(
+                                5, message='Min length of code must have less than 6 numbers'),
+                            validate_int_number])
+    name = models.CharField(max_length=100, validators=[
+                            MinLengthValidator(
+                                1, message='Name cannot be empty')])
+    municipality = models.CharField(max_length=100, validators=[
+        MinLengthValidator(
+            1, message='Municipality cannot be empty')])
+    province = models.CharField(max_length=100, validators=[
+        MinLengthValidator(
+                                1, message='Province cannot be empty')])
+    district = models.PositiveIntegerField(validators=[
+        MinValueValidator(
+            1, message='District cannot be empty',)])
+    political_area = models.CharField(max_length=100, validators=[
+        MinLengthValidator(
+            1, message='Political area cannot be empty')])
+    sector = models.CharField(max_length=100, validators=[
+        MinLengthValidator(
+            1, message='Sector cannot be empty')])
+    subordinate = models.CharField(max_length=100, validators=[
+        MinLengthValidator(
+            1, message='Subordinate cannot be empty')])
 
     def integrantes(self):
         militant = Militant.objects.filter(core=self.code)
@@ -144,7 +172,7 @@ class Militant(models.Model):
         if not self.is_valid():
             raise ValueError('Address must exist')
         super().save(*args, **kwargs)
-    
+
     def __str__(self) -> str:
         return self.name
 
