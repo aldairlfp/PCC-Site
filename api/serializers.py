@@ -10,6 +10,13 @@ class AddressSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class CoreSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Core
+        fields = ['code', 'name', 'municipality', 'province', 'district', 'political_area',
+                  'sector', 'subordinate']
+
+
 class PaymentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Payment
@@ -17,6 +24,7 @@ class PaymentSerializer(serializers.ModelSerializer):
 
 
 class PaymentDeclarationSerializer(serializers.ModelSerializer):
+    payments = PaymentSerializer(many=True, read_only=True)
     class Meta:
         model = PaymentDeclaration
         exclude = ['militant']
@@ -40,7 +48,8 @@ class MilitantSerializer(serializers.ModelSerializer):
     class Meta:
         model = Militant
         fields = ['ci', 'name', 'first_lastname',
-                  'second_lastname', 'address']
+                  'second_lastname', 'sex', 'status', 'address']
+
 
 class MilitantPostSerializer(serializers.ModelSerializer):
     class Meta:
@@ -48,25 +57,15 @@ class MilitantPostSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class CoreSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Core
-        fields = ['code', 'name', 'municipality', 'province', 'district', 'political_area',
-                  'sector', 'subordinate']
-
-
 class MilitantDeclarationsSerializer(serializers.ModelSerializer):
     payment_declaration = PaymentDeclarationSerializer(
         many=True, read_only=True)
     address = AddressSerializer(read_only=True)
-    payment_declaration = PaymentDeclarationSerializer(
-        many=True, read_only=True)
-    core = CoreSerializer(read_only=True)
 
     class Meta:
         model = Militant
         fields = ['ci', 'name', 'first_lastname',
-                  'second_lastname', 'address', 'core', 'payment_declaration']
+                  'second_lastname', 'address', 'payment_declaration']
 
 
 class MilitantDebtsSerializer(object):
@@ -97,6 +96,15 @@ class MilitantDebtsSerializer(object):
         if many:
             return militant_debts.data
         return militant_debts.data[0]
+
+
+class CoreDetailSerializer(serializers.ModelSerializer):
+    militants = MilitantSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Core
+        fields = ['code', 'name', 'municipality', 'province', 'district', 'political_area',
+                  'sector', 'subordinate', 'militants']
 
 
 class UserSerializer(serializers.ModelSerializer):

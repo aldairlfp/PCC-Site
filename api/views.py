@@ -39,7 +39,7 @@ class Address_APIView_Detail(APIView):
 
     def put(self, request, pk, format=None):
         address = self.get_queryset(pk)
-        serializer = AddressSerializer(data=request.data)
+        serializer = AddressSerializer(address, data=request.data)
         if serializer.is_valid():
             serializer.update(address, serializer.data)
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -79,7 +79,8 @@ class DeclarationDate_APIView_Detail(APIView):
 
     def put(self, request, pk, format=None):
         declaration_date = self.get_queryset(pk)
-        serializer = DeclarationDateSerializer(data=serializer.data)
+        serializer = DeclarationDateSerializer(
+            declaration_date, data=serializer.data)
         if serializer.is_valid():
             serializer.update(declaration_date, serializer.data)
         return Response(serializer.errors, status=status.HTTP_200_OK)
@@ -118,7 +119,7 @@ class PaymentDate_APIView_Detail(APIView):
 
     def put(self, request, pk, format=None):
         payment_date = self.get_queryset(pk)
-        serializer = PaymentDateSerializer(data=request.data)
+        serializer = PaymentDateSerializer(payment_date,data=request.data)
         if serializer.is_valid():
             serializer.update(payment_date, serializer.data)
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -153,12 +154,12 @@ class Core_APIView_Detail(APIView):
 
     def get(self, request, pk, format=None):
         core = self.get_queryset(pk)
-        serializer = CoreSerializer(core)
+        serializer = CoreDetailSerializer(core)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def put(self, request, pk, format=None):
         core = self.get_queryset(pk)
-        serializer = CoreSerializer(data=request.data)
+        serializer = CoreSerializer(core, data=request.data)
         if serializer.is_valid():
             serializer.update(core, serializer.data)
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -296,7 +297,7 @@ class User_APIView_Detail(APIView):
 
     def put(self, request, pk, format=None):
         user = self.get_queryset(pk)
-        serializer = UserSerializer(user)
+        serializer = UserSerializer(user, request.data)
         if serializer.is_valid():
             serializer.update(user, serializer.data)
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -330,7 +331,7 @@ class Group_APIViews_Details(APIView):
 
     def put(self, request, pk, format=None):
         auth_group = self.get_queryset(pk)
-        serializer = GroupSerializer(data=request.data)
+        serializer = GroupSerializer(auth_group, data=request.data)
         if serializer.is_valid():
             serializer.update(auth_group, serializer.data)
             return Response(serializer.data, status=status.HTTP_200_OK)
