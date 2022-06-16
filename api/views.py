@@ -11,6 +11,13 @@ from .serializers import *
 from .models import Address, Militant, PaymentNorm, Core, Payment
 
 
+def detail(queryset, msg_error):
+    if len(queryset) > 0:
+        return queryset[0]
+    else:
+        return Response(msg_error, status=status.HTTP_404_NOT_FOUND)
+
+
 class Address_APIView(APIView):
     def get_queryset(self):
         return Address.objects.all()
@@ -29,16 +36,17 @@ class Address_APIView(APIView):
 
 
 class Address_APIView_Detail(APIView):
-    def get_queryset(self, pk):
-        return get_object_or_404(Address, pk=pk)
+    def get_queryset(self):
+        address = Address.objects.filter(pk=self.kwargs['pk'])
+        return address
 
-    def get(self, request, pk, format=None):
-        address = self.get_queryset(pk)
+    def get(self, request, format=None):
+        address = detail(self.get_queryset(), 'Address does not exist.')
         serializer = AddressSerializer(address)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    def put(self, request, pk, format=None):
-        address = self.get_queryset(pk)
+    def put(self, request, format=None):
+        address = detail(self.get_queryset(), 'Address does not exist.')
         serializer = AddressSerializer(address, data=request.data)
         if serializer.is_valid():
             serializer.update(address, serializer.data)
@@ -69,18 +77,15 @@ class DeclarationDate_APIView(APIView):
 
 
 class DeclarationDate_APIView_Detail(APIView):
-    def get_queryset(self, pk):
-        return get_object_or_404(DeclarationDate, pk)
+    def get_queryset(self):
+        declaration_date = DeclarationDate.objects.filter(pk=self.kwargs['pk'])
+        return declaration_date
 
-    def get(self, request, pk, format=None):
-        address = self.get_queryset(pk)
-        serializer = AddressSerializer(address)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-    def put(self, request, pk, format=None):
-        declaration_date = self.get_queryset(pk)
+    def put(self, request, format=None):
+        declaration_date = detail(
+            self.get_queryset(), 'Declaration date does not exist.')
         serializer = DeclarationDateSerializer(
-            declaration_date, data=serializer.data)
+            declaration_date, data=request.data)
         if serializer.is_valid():
             serializer.update(declaration_date, serializer.data)
         return Response(serializer.errors, status=status.HTTP_200_OK)
@@ -109,17 +114,13 @@ class PaymentDate_APIView(APIView):
 
 
 class PaymentDate_APIView_Detail(APIView):
-    def get_queryset(self, pk):
-        return get_object_or_404(PaymentDate, pk=pk)
-
-    def get(self, request, pk, format=None):
-        payment_date = self.get_queryset(pk)
-        serializer = CoreSerializer(payment_date)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+    def get_queryset(self):
+        return PaymentDate.objects.filter(pk=self.kwargs['pk'])
 
     def put(self, request, pk, format=None):
-        payment_date = self.get_queryset(pk)
-        serializer = PaymentDateSerializer(payment_date,data=request.data)
+        payment_date = detail(self.get_queryset(),
+                              'Payment date does not exist')
+        serializer = PaymentDateSerializer(payment_date, data=request.data)
         if serializer.is_valid():
             serializer.update(payment_date, serializer.data)
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -149,11 +150,11 @@ class Core_APIView(APIView):
 
 
 class Core_APIView_Detail(APIView):
-    def get_queryset(self, pk):
-        return get_object_or_404(Core, pk=pk)
+    def get_queryset(self):
+        return Core.objects.filter(pk=self.kwargs['pk'])
 
     def get(self, request, pk, format=None):
-        core = self.get_queryset(pk)
+        core = detail(self.get_queryset(), 'Core does not exist.')
         serializer = CoreDetailSerializer(core)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -195,16 +196,12 @@ class Militant_APIView_Detail(APIView):
         return militant
 
     def get(self, request, pk, format=None):
-        militant_query = self.get_queryset()
-        if len(militant_query) > 0:
-            militant = militant_query[0]
-        else:
-            return Http404('Militant does not exist')
+        militant = detail(self.get_queryset(), 'Militant does not exist')
         serializer = MilitantDeclarationsSerializer(militant)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def put(self, request, pk, format=None):
-        militant = self.get_queryset(pk)
+        militant = detail(self.get_queryset(), 'Militant does not exist')
         serializer = MilitantDeclarationsSerializer(
             militant, data=request.data)
         if serializer.is_valid():
@@ -340,6 +337,7 @@ class Group_APIViews_Details(APIView):
             serializer.update(auth_group, serializer.data)
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class Permission_APIView(APIView):
     def get_queryset(self):
