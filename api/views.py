@@ -255,7 +255,7 @@ class Debts_APIView(APIView):
 
 class Debts_APIViews_Detail(APIView):
     def get_queryset(self):
-        return Militant.objects.none
+        return Militant.objects.filter(pk=self.kwargs['pk'])
 
     def get(self, request, pk, format=None):
         militant = Militant.objects.filter(pk=pk)
@@ -288,16 +288,16 @@ class User_APIView(APIView):
 
 
 class User_APIView_Detail(APIView):
-    def get_queryset(self, pk):
-        return get_object_or_404(User, pk=pk)
+    def get_queryset(self):
+        return User.objects.filter(pk=self.kwargs['pk'])
 
-    def get(self, request, pk, format=None):
-        user = self.get_queryset(pk)
+    def get(self, request, format=None):
+        user = detail(self.get_queryset(), 'User does not exist')
         serializer = UserSerializer(user)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def put(self, request, pk, format=None):
-        user = self.get_queryset(pk)
+        user = detail(self.get_queryset(), 'User does not exist')
         serializer = UserSerializer(user, request.data)
         if serializer.is_valid():
             serializer.update(user, serializer.data)
@@ -322,22 +322,22 @@ class Group_APIView(APIView):
 
 
 class Group_APIViews_Details(APIView):
-    def get_queryset(self, pk):
+    def get_queryset(self):
         Permission.objects.all()
-        return get_object_or_404(Group, pk=pk)
+        return Group.objects.filter(pk=self.kwargs['pk'])
 
-    def get(self, request, pk, format=None):
-        serializer = GroupSerializer(self.get_queryset(pk))
-        return Response(serializer.data)
+    def get(self, request, format=None):
+        group = detail(self.get_queryset(), 'Group does not exist')
+        serializer = GroupSerializer(group)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def put(self, request, pk, format=None):
-        auth_group = self.get_queryset(pk)
-        serializer = GroupSerializer(auth_group, data=request.data)
+        group = detail(self.get_queryset(), 'Group does not exist')
+        serializer = GroupSerializer(Group, request.data)
         if serializer.is_valid():
-            serializer.update(auth_group, serializer.data)
+            serializer.update(group, serializer.data)
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
 class Permission_APIView(APIView):
     def get_queryset(self):
