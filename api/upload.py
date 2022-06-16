@@ -41,7 +41,7 @@ class UploadData_APIView(APIView):
         code = line[1][8:]
 
         line = next(reader)
-        sector = line[0][47:]
+        sector = line[0][48:]
 
         line = next(reader)
         subordinate = line[0][49:]
