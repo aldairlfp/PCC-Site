@@ -25,16 +25,21 @@
         :rules="nameRules"
       />
 
-      <q-select
+      <q-select class="provi"
       ref="provinceRef"
       filled v-model="province"
       :options="poptions"
       label="Provincia:"
       lazy-rules
       :rules="provinceRules"
-      />
+      >
 
-      <q-select
+      <template v-slot:after>
+          <q-btn round dense flat icon="send" @click="select_mun_list"/>
+      </template>
+      </q-select>
+
+      <q-select class="muni"
       ref="municipalityRef"
       filled v-model="municipality"
       :options="moptions"
@@ -112,7 +117,9 @@ const metadata = {
 export default {
   methods:{
     select_mun_list() {
-      this.moptions = {"Pinar del Río":["Pinar del Río", "San Juan y Martínez",
+      const p_key = this.province.value;
+      console.log(p_key);
+      const values = {"Pinar del Río":["Pinar del Río", "San Juan y Martínez",
     "Sandino", "Los Palacios", "Guane", "La Palma", "Minas de Matahambre", "Mantua"],
     "La Habana":["Arroyo Naranjo", "Boyeros", "Centro Habana", "Cotorro", "Diez de Octubre",
     "El Cerro", "Guanabacoa", "La Habana del Este", "La Habana Vieja", "La Lisa", "Marianao",
@@ -141,7 +148,9 @@ export default {
     "Granma":["Bartolomé Masó", "Bayamo", "Buey Arriba", "Campechuela", "Cauto Cristo", "Guisa",
     "Jiguaní", "Manzanillo", "Media Luna", "Niquero", "Pilón", "Río Cauto", "Yara"],
     "Isla de la Juventud":["Isla de la Juventud"]
-    }[this.province.value];
+    };
+    console.log(values.p_key);
+    this.moptions = values.p_key;
     },
   },
   setup() {
@@ -205,7 +214,7 @@ export default {
       subordinate,
       subordinateRef,
       subordinateRules: [
-        (val) => (val && val.length > 0) || "Please type something", select_mun_list()
+        (val) => (val && val.length > 0) || "Please type something",
       ],
 
       province,
@@ -242,6 +251,7 @@ export default {
           subordinateRef.value.hasError ||
           municipalityRef.value.hasError
         ) {
+          console.log(province.value);
           Notify.create({
             icon: "error",
             color: "negative",
@@ -250,6 +260,7 @@ export default {
           console.log();
         } else {
           try {
+
             axios
               .post("http://localhost:8000/api/core/", {
                 code: this.code,
@@ -300,8 +311,6 @@ export default {
         nameRef.value.resetValidation();
         codeRef.value.resetValidation();
         sectorRef.value.resetValidation();
-        provinceRef.value.resetValidation();
-        municipality.value.resetValidation();
         political_areaRef.value.resetValidation();
         districtRef.value.resetValidation();
         subordinateRef.value.resetValidation();
