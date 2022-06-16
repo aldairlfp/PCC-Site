@@ -1,7 +1,7 @@
 from rest_framework.views import APIView, Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
-from django.http import HttpResponse
+from django.http import Http404, HttpResponse
 from django.contrib.auth.models import User, Group, Permission
 
 import json
@@ -190,12 +190,16 @@ class Militant_APIView(APIView):
 
 
 class Militant_APIView_Detail(APIView):
-    def get_queryset(self, pk):
-        militant = get_object_or_404(Militant, pk=pk)
+    def get_queryset(self):
+        militant = Militant.objects.filter(pk=self.kwargs['pk'])
         return militant
 
     def get(self, request, pk, format=None):
-        militant = self.get_queryset(pk)
+        militant_query = self.get_queryset()
+        if len(militant_query) > 0:
+            militant = militant_query[0]
+        else:
+            return Http404('Militant does not exist')
         serializer = MilitantDeclarationsSerializer(militant)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -336,3 +340,11 @@ class Group_APIViews_Details(APIView):
             serializer.update(auth_group, serializer.data)
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class Permission_APIView(APIView):
+    def get_queryset(self):
+        return Permission.objects.all()
+
+    def get(self, request, format=None):
+        serializer = PermissionSerializer(self.get_queryset(), many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)

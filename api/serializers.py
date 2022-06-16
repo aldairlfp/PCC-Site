@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import User, Group, Permission
 
 from api.models import Address, PaymentDate, Militant, Core, Payment, PaymentDeclaration, DeclarationDate
 
@@ -27,7 +27,7 @@ class PaymentDeclarationSerializer(serializers.ModelSerializer):
     payments = PaymentSerializer(many=True, read_only=True)
     class Meta:
         model = PaymentDeclaration
-        exclude = ['militant']
+        exclude = ['militant', 'payment']
 
 
 class DeclarationDateSerializer(serializers.ModelSerializer):
@@ -117,4 +117,10 @@ class GroupSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Group
+        fields = '__all__'
+
+class PermissionSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Permission
         fields = '__all__'

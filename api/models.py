@@ -129,7 +129,7 @@ class Militant(models.Model):
     sex = models.CharField(max_length=10, choices=Sex.choices, null=True)
     status = models.CharField(max_length=20, choices=Status.choices, null=True)
     address = models.ForeignKey(Address, on_delete=models.CASCADE, null=True)
-    declaration_date = models.ManyToManyField(
+    payment_declaration = models.ManyToManyField(
         DeclarationDate, through='PaymentDeclaration')
 
     def payment_contribution(self):
@@ -210,12 +210,12 @@ class PaymentDeclaration(models.Model):
         DeclarationDate, on_delete=models.CASCADE)
     militant = models.ForeignKey(
         Militant, related_name='payment_declaration', on_delete=models.CASCADE)
-    payment_date = models.ManyToManyField(PaymentDate, through='Payment')
+    payment = models.ManyToManyField(PaymentDate, through='Payment')
 
     @staticmethod
     def real_payment_declaration(ci):
         declarations_query = PaymentDeclaration.objects.filter(
-            militant=ci).order_by('-year', '-month')
+            militant=ci).order_by('-year', '-month', '-declaration_date')
 
         declarations = []
 
@@ -229,6 +229,16 @@ class PaymentDeclaration(models.Model):
                 declarations.append(query_i)
 
         return list(reversed(declarations))
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        declarations_query = PaymentDeclaration.objects.filter(
+            militant=self.militant, year=self.year, month=self.month).order_by('-year', '-month', '-declaration_date')
+        if len(declarations_query) > 1:
+            payments = declarations_query[1].payments.all()
+            for pay in payments:
+                Payment.objects.create(
+                    payment_declaration=self, payment_date=pay.payment_date, amount=pay.amount)
 
     class Meta:
         db_table = 'payment_declaration'

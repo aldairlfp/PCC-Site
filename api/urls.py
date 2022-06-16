@@ -24,6 +24,7 @@ urlpatterns = [
     path('user/<int:pk>/', User_APIView_Detail.as_view()),
     path('group/', Group_APIView.as_view()),
     path('group/<int:pk>/', Group_APIViews_Details.as_view()),
+    path('permission/', Permission_APIView.as_view()),
     path('token-auth/', views.obtain_auth_token),
-    path('upload-militant/', upload_data)
+    path('upload-militant/', UploadData_APIView.as_view())
 ]
