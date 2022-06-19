@@ -32,6 +32,7 @@
 <script>
 import axios from "axios";
 import { ref } from "vue";
+import { Cookies } from "quasar";
 
 export default {
   setup() {
@@ -44,10 +45,14 @@ export default {
     return {
       add_file,
       post() {
+        const token = Cookies.get('auth-token')
         let formData = new FormData();
         formData.append("file", add_file.value);
         const options = {
-          headers: { "content-type": "multipart/form-data" },
+          headers: { 
+            "content-type": "multipart/form-data",
+            'Authorization': 'Token ' + token,
+            },
         };
         // console.log(form_file);
         axios

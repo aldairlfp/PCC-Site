@@ -7,10 +7,10 @@ const routes = [
   //},
 
   {
-    path: "/",
+    path: "/main",
     component: () => import("layouts/MainLayout.vue"),
     children: [
-      { path: "/", component: () => import("pages/LoginPage.vue") },
+      // { path: "/", component: () => import("pages/LoginPage.vue") },
       { path: "/militant", component: () => import("pages/MilitantsPage.vue") },
       { path: "/debt", component: () => import("pages/DebtPage.vue") },
       { path: "/core", component: () => import("pages/CorePage.vue") },
@@ -19,6 +19,14 @@ const routes = [
       { path: "/test", component: () => import("pages/TestPage.vue") },
     ],
 
+  },
+
+  {
+    path: "/",
+    component: () => import("layouts/LoginLayout.vue"),
+    children: [
+      {path: "", component: () => import('pages/LoginPage.vue')},
+    ],
   },
 
   // Always leave this as last one,

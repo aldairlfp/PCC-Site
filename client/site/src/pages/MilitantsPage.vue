@@ -107,12 +107,12 @@ export default defineComponent({
   },
   methods: {
     getData() {
-      const token = Cookies.get('auth-token')
       this.verifyAuth()
+      const token = Cookies.get('auth-token')
       this.$axios
         .get("http://localhost:8000/api/militant/", {
           headers: {
-            'Authorization': token,
+            'Authorization': 'Token ' + token,
           }
         })
         .then((res) => {

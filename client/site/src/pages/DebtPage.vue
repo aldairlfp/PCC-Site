@@ -33,6 +33,7 @@
 import { defineComponent } from "vue";
 import { ref } from "vue";
 import axios from "src/boot/axios";
+import { Cookies } from "quasar";
 
 const columns = [
   {
@@ -89,8 +90,14 @@ export default defineComponent({
   },
   methods: {
     getData() {
+      this.verifyAuth()
+      const token = Cookies.get('auth-token')
       this.$axios
-        .get("http://localhost:8000/pcc/debts/")
+        .get("http://localhost:8000/api/debts/", {
+          headers: {
+            'Authorization': 'Token ' + token,
+          }
+        })
         .then((res) => {
           this.rows = res.data;
           this.rows = this.giveFormat(this.rows);
@@ -99,6 +106,13 @@ export default defineComponent({
         .catch((err) => {
           console.log(err);
         });
+    },
+    verifyAuth(){
+      if( !Cookies.has('auth-token'))
+      {
+        this.$router.push('/')
+        return
+      }
     },
 
     giveFormat(post) {

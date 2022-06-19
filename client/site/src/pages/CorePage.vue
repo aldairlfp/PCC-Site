@@ -57,6 +57,7 @@
 import { defineComponent } from "vue";
 import { ref } from "vue";
 import axios from "axios";
+import { Cookies } from "quasar"
 
 const columns = [
   {
@@ -121,8 +122,14 @@ export default defineComponent({
   },
   methods: {
     getData() {
+      this.verifyAuth()
+      const token = Cookies.get('auth-token')
       this.$axios
-        .get("http://localhost:8000/api/core/")
+        .get("http://localhost:8000/api/core/", {
+          headers: {
+            'Authorization': 'Token ' + token,
+          }
+        })
         .then((res) => {
           this.rows = res.data;
           console.log(res);
@@ -130,6 +137,13 @@ export default defineComponent({
         .catch((err) => {
           console.log(err);
         });
+    },
+    verifyAuth(){
+      if( !Cookies.has('auth-token'))
+      {
+        this.$router.push('/')
+        return
+      }
     },
     reloadPage() {
       window.location.reload();
