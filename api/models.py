@@ -5,6 +5,7 @@ from django.db import models
 from dateutil import rrule
 from datetime import datetime, timedelta
 from django.core.exceptions import ValidationError
+from django.core.validators import MinLengthValidator, MaxLengthValidator, MinValueValidator
 
 from .utils import date_compare
 
@@ -12,6 +13,14 @@ from .utils import date_compare
 def validate_null_strings(value):
     if len(value) <= 0:
         raise ValidationError('{} must not be null'.format(value))
+
+
+def validate_int_number(value):
+    try:
+        int(value)
+    except:
+        raise ValidationError(
+            'A valid integer is required.')
 
 
 class Address(models.Model):
@@ -23,11 +32,20 @@ class Address(models.Model):
     apto = models.CharField('No. Y/O APTO', max_length=100)
 
     def is_valid(self):
-        return len(self.street) > 0 or len(self.municipality) > 0 or len(self.province) > 0 or len(self.neighborhood) > 0 or len(self.corner_or_ave) > 0 or len(self.apto) > 0
+        address = Address.objects.filter(
+            street=self.street, municipality=self.municipality,
+            province=self.province, neighborhood=self.neighborhood,
+            corner_or_ave=self.corner_or_ave, apto=self.apto)
+        valid_length = len(self.street) > 0 or len(self.municipality) > 0
+        valid_length = valid_length or len(
+            self.province) > 0 or len(self.neighborhood) > 0
+        valid_length = valid_length or len(
+            self.corner_or_ave) > 0 or len(self.apto) > 0
+        return len(address) == 0 and valid_length
 
     def save(self, *args, **kwargs):
         if not self.is_valid():
-            raise ValueError('Address must exist')
+            raise ValueError('Address must exist.')
         super().save(*args, **kwargs)
 
     def __str__(self) -> str:
@@ -40,18 +58,33 @@ class Address(models.Model):
 
 
 class Core(models.Model):
-    code = models.CharField(primary_key=True, max_length=5)
-    name = models.CharField(max_length=100)
-    municipality = models.CharField(max_length=100)
-    province = models.CharField(max_length=100)
-    district = models.PositiveIntegerField()
-    political_area = models.CharField(max_length=100)
-    sector = models.CharField(max_length=100)
-    subordinate = models.CharField(max_length=100)
-
-    def integrantes(self):
-        militant = Militant.objects.filter(core=self.code)
-        return militant
+    code = models.CharField(primary_key=True, max_length=5, validators=[
+                            MinLengthValidator(
+                                5, message='Min length of code must have more than 4 numbers.'),
+                            MaxLengthValidator(
+                                5, message='Min length of code must have less than 6 numbers.'),
+                            validate_int_number])
+    name = models.CharField(max_length=100, validators=[
+                            MinLengthValidator(
+                                1, message='Name cannot be empty.')])
+    municipality = models.CharField(max_length=100, validators=[
+        MinLengthValidator(
+            1, message='Municipality cannot be empty.')])
+    province = models.CharField(max_length=100, validators=[
+        MinLengthValidator(
+                                1, message='Province cannot be empty.')])
+    district = models.PositiveIntegerField(validators=[
+        MinValueValidator(
+            1, message='District cannot be empty.',)])
+    political_area = models.CharField(max_length=100, validators=[
+        MinLengthValidator(
+            1, message='Political area cannot be empty.')])
+    sector = models.CharField(max_length=100, validators=[
+        MinLengthValidator(
+            1, message='Sector cannot be empty.')])
+    subordinate = models.CharField(max_length=100, validators=[
+        MinLengthValidator(
+            1, message='Subordinate cannot be empty.')])
 
     def __str__(self) -> str:
         return self.name
@@ -64,17 +97,17 @@ class DeclarationDate(models.Model):
     date = models.DateTimeField(primary_key=True)
 
     def __str__(self) -> str:
-        return self.declaration_date.__str__()
+        return self.date.__str__()
 
     class Meta:
         db_table = 'declaration_date'
 
 
 class PaymentDate(models.Model):
-    date = models.DateField(primary_key=True)
+    date = models.DateTimeField(primary_key=True)
 
     def __str__(self) -> str:
-        return self.payment_date.__str__()
+        return self.date.__str__()
 
     class Meta:
         db_table = 'payment_date'
@@ -83,17 +116,20 @@ class PaymentDate(models.Model):
 class Militant(models.Model):
     Sex = models.TextChoices('Sex', 'Masculino Femenino')
     Status = models.TextChoices('Status', 'Casado/a Soltero/a Divorciado/a')
-    ci = models.CharField(primary_key=True, max_length=11)
-    name = models.CharField(max_length=100)
-    first_lastname = models.CharField(max_length=100)
-    second_lastname = models.CharField(max_length=100)
-    # sexo = models.CharField(max_length=10, choices=Sexo.choices)
-    # estado = models.CharField(max_length=20, choices=Estado.choices)
-    register_date = models.DateTimeField(default=datetime.now())
+    ci = models.CharField(primary_key=True, max_length=11,
+                          validators=[MinLengthValidator(11)])
+    name = models.CharField(max_length=100, validators=[MinLengthValidator(1)])
+    first_lastname = models.CharField(
+        max_length=100, validators=[MinLengthValidator(1)])
+    second_lastname = models.CharField(
+        max_length=100, validators=[MinLengthValidator(1)])
     core = models.ForeignKey(
         Core, related_name='militants', on_delete=models.CASCADE)
+    register_date = models.DateTimeField(default=datetime.now())
+    sex = models.CharField(max_length=10, choices=Sex.choices, null=True)
+    status = models.CharField(max_length=20, choices=Status.choices, null=True)
     address = models.ForeignKey(Address, on_delete=models.CASCADE, null=True)
-    declaration_date = models.ManyToManyField(
+    payment_declaration = models.ManyToManyField(
         DeclarationDate, through='PaymentDeclaration')
 
     def payment_contribution(self):
@@ -144,7 +180,7 @@ class Militant(models.Model):
         if not self.is_valid():
             raise ValueError('Address must exist')
         super().save(*args, **kwargs)
-    
+
     def __str__(self) -> str:
         return self.name
 
@@ -167,19 +203,19 @@ class PaymentDeclaration(models.Model):
     salary = models.PositiveIntegerField()
     year = models.PositiveIntegerField()
     month = models.PositiveIntegerField()
-    payment_norm = models.ForeignKey(
+    norm = models.ForeignKey(
         PaymentNorm, on_delete=models.CASCADE)
     share = models.PositiveIntegerField()
     declaration_date = models.ForeignKey(
         DeclarationDate, on_delete=models.CASCADE)
     militant = models.ForeignKey(
         Militant, related_name='payment_declaration', on_delete=models.CASCADE)
-    payment_date = models.ManyToManyField(PaymentDate, through='Payment')
+    payment = models.ManyToManyField(PaymentDate, through='Payment')
 
     @staticmethod
     def real_payment_declaration(ci):
         declarations_query = PaymentDeclaration.objects.filter(
-            payment_militant=ci).order_by('-year', '-month')
+            militant=ci).order_by('-year', '-month', '-declaration_date')
 
         declarations = []
 
@@ -194,6 +230,16 @@ class PaymentDeclaration(models.Model):
 
         return list(reversed(declarations))
 
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        declarations_query = PaymentDeclaration.objects.filter(
+            militant=self.militant, year=self.year, month=self.month).order_by('-year', '-month', '-declaration_date')
+        if len(declarations_query) > 1:
+            payments = declarations_query[1].payments.all()
+            for pay in payments:
+                Payment.objects.create(
+                    payment_declaration=self, payment_date=pay.payment_date, amount=pay.amount)
+
     class Meta:
         db_table = 'payment_declaration'
         # unique_together = ['declaration_date', 'militant', 'id']
@@ -204,7 +250,7 @@ class PaymentDeclaration(models.Model):
 
 class Payment(models.Model):
     payment_declaration = models.ForeignKey(
-        PaymentDeclaration, on_delete=models.CASCADE)
+        PaymentDeclaration, related_name='payments', on_delete=models.CASCADE)
     payment_date = models.ForeignKey(PaymentDate, on_delete=models.CASCADE)
     amount = models.PositiveIntegerField()
 
@@ -213,7 +259,7 @@ class Payment(models.Model):
 
     class Meta:
         db_table = 'payment'
-        unique_together = (('payment_declaration', 'payment_date'))
+        # unique_together = (('payment_declaration', 'payment_date'))
 
 
 class Task(models.Model):
