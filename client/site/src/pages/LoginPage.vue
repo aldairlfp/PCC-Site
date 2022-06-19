@@ -1,21 +1,44 @@
 <template>
-  <q-page>
-    <div class="pa-md" style="max-width: 1000px">
-      <img class="ico" src="../../public/from_site_logo.png" alt="" />
-      <h5 class="mssg">Por favor inicia sesión ...</h5>
-      <form @submit.prevent.stop="onSubmit" @reset.prevent.stop="onReset" class="gutter-md">
-        <q-input ref="nameRef" filled v-model="name" label="Nombre *" lazy-rules :rules="nameRules" />
+<meta name="Login">
+  <div class="pa-md" style="max-width: 1000px">
+    <img class="ico" src="../../public/from_site_logo.png" alt="" />
+    <h5 class="mssg">Por favor inicia sesión ...</h5>
+    <form
+      @submit.prevent.stop="onSubmit"
+      @reset.prevent.stop="onReset"
+      class="gutter-md"
+    >
+      <q-input
+        ref="nameRef"
+        filled
+        v-model="name"
+        label="Usuario:"
+        lazy-rules
+        :rules="nameRules"
+      />
 
-        <q-input ref="passwordRef" filled type="password" v-model="password" label="Contraseña *" lazy-rules
-          :rules="passwordRules" />
+      <q-input
+        ref="passwordRef"
+        filled
+        type="password"
+        v-model="password"
+        label="Contraseña:"
+        lazy-rules
+        :rules="passwordRules"
+      />
 
-        <div>
-          <q-btn label="Submit" type="submit" color="primary" />
-          <q-btn label="Reset" type="reset" color="primary" flat class="q-ml-sm" />
-        </div>
-      </form>
-    </div>
-  </q-page>
+      <div>
+        <q-btn label="Iniciar" type="submit" color="primary" />
+        <q-btn
+          label="Reset"
+          type="reset"
+          color="primary"
+          flat
+          class="q-ml-sm"
+        />
+      </div>
+    </form>
+  </div>
 </template>
 
 <script>
@@ -23,6 +46,14 @@ import { useQuasar } from "quasar";
 import { ref, defineComponent } from "vue";
 import { Cookies } from "quasar";
 import { api } from "src/boot/axios";
+import { useMeta } from "quasar";
+
+const metadata = {
+  title: 'PCC - Login',
+  // meta: {
+  //   description: {name: "PCC", content:"MilitantPage"}
+  // }
+}
 
 export default defineComponent({
   setup() {
@@ -35,6 +66,7 @@ export default defineComponent({
     const passwordRef = ref(null);
 
     return {
+      meta: useMeta(metadata),
       name,
       nameRef,
       nameRules: [

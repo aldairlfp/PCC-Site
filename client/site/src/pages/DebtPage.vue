@@ -9,6 +9,8 @@
         row-key="ci"
         :filter="filter"
         :separator="separator"
+        selection="single"
+        v-model:selected="selected"
       >
         <template v-slot:top>
           <q-input
@@ -24,7 +26,6 @@
           </q-input>
         </template>
       </q-table>
-      <h5>Selected: {{ JSON.stringify(selected) }}</h5>
     </div>
     <div class="q-mt-md"></div>
   </q-page>
@@ -34,6 +35,7 @@ import { defineComponent } from "vue";
 import { ref } from "vue";
 import axios from "src/boot/axios";
 import { Cookies } from "quasar";
+import { useMeta } from "quasar";
 
 const columns = [
   {
@@ -72,11 +74,19 @@ const columns = [
     sortable: true,
   },
 ];
+const metadata = {
+  title: 'PCC - Atrasos',
+  meta: {
+    description: {name: "Militantes", content:"MilitantPage"}
+  }
+}
 
 export default defineComponent({
   name: "DebtsPage",
   data() {
     return {
+      meta: useMeta(metadata),
+      selected: ref([]),
       columns,
       loading: ref(false),
       filter: ref(""),

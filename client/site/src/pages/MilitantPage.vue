@@ -16,14 +16,14 @@
           <q-btn
             color="primary"
             :disable="loading"
-            label="Add row"
+            label="Agregar"
             @click="addRow"
           />
           <q-btn
             class="q-ml-sm"
             color="primary"
             :disable="loading"
-            label="Remove row"
+            label="Eliminar"
             @click="removeRow"
           />
           <q-btn
@@ -47,7 +47,6 @@
           </q-input>
         </template>
       </q-table>
-      <h5>Selected: {{ JSON.stringify(selected) }}</h5>
     </div>
     <div class="q-mt-md"></div>
   </q-page>
@@ -55,6 +54,7 @@
 <script>
 import { defineComponent } from "vue";
 import { ref } from "vue";
+import { useMeta } from "quasar";
 import axios from "src/boot/axios";
 import { Cookies } from "quasar";
 
@@ -89,10 +89,18 @@ const columns = [
   },
 ];
 
+const metadata = {
+  title: 'PCC - Militantes',
+  meta: {
+    description: {name: "Militantes", content:"MilitantPage"}
+  }
+}
+
 export default defineComponent({
   name: "MilitantsPage",
   data() {
     return {
+      meta: useMeta(metadata),
       selected: ref([]),
       columns,
       rows: [],
@@ -131,8 +139,15 @@ export default defineComponent({
       }
     },
     addRow() {},
-    removeRow() {},
-    modifyRow() {},
+    removeRow() {
+      this.$axios.delete(
+        "http://localhost:8000/api/militant/" + this.selected[0].ci + "/"
+      );
+      window.location.reload();
+    },
+    modifyRow() {
+
+    },
   },
   created() {
     this.getData();

@@ -1,12 +1,12 @@
 <template>
   <q-page class="flex flex-center">
     <div class="q-pa-md">
-      <center><h4 style="color: #1a1b20">NUCLEOS</h4></center>
+      <h4 class="core" style="color: #1a1b20">NUCLEOS</h4>
       <q-table
         class="my-sticky-header-column-table"
         :rows="rows"
         :columns="columns"
-        row-key="ci"
+        row-key="code"
         :filter="filter"
         selection="single"
         v-model:selected="selected"
@@ -48,7 +48,6 @@
           </q-input>
         </template>
       </q-table>
-      <h5>Selected: {{ JSON.stringify(selected) }}</h5>
     </div>
     <div class="q-mt-md"></div>
   </q-page>
@@ -58,6 +57,7 @@ import { defineComponent } from "vue";
 import { ref } from "vue";
 import axios from "axios";
 import { Cookies } from "quasar"
+import { useMeta } from "quasar";
 
 const columns = [
   {
@@ -104,11 +104,19 @@ const columns = [
     sortable: true,
   },
 ];
+const metadata = {
+  title: 'PCC - Núcleos',
+  meta: {
+    description: {name: "Militantes", content:"MilitantPage"}
+  }
+}
+const selected = ref([]);
 export default defineComponent({
   name: "MilitantsPage",
   data() {
     return {
-      selected: ref([]),
+      meta: useMeta(metadata),
+      selected,
       columns,
       rows: [],
       loading: ref(false),
@@ -132,7 +140,6 @@ export default defineComponent({
         })
         .then((res) => {
           this.rows = res.data;
-          console.log(res);
         })
         .catch((err) => {
           console.log(err);
@@ -149,13 +156,13 @@ export default defineComponent({
       window.location.reload();
     },
     addRow() {
-      window.open("./#/addcore");
+      window.open("./addcore");
+      window.close();
     },
     removeRow() {
-      response = axios.delete(
-        "http://localhost:8000/pcc/core/" + this.selected[0]["code"] + "/"
+      this.$axios.delete(
+        "http://localhost:8000/api/core/" + this.selected[0].code + "/"
       );
-      console.log(response);
       window.location.reload();
     },
     modifyRow() {},
@@ -167,6 +174,8 @@ export default defineComponent({
 </script>
 
 <style lang="sass">
+.core
+  margin-left: 400px
 .q-checkbox__inner
   color: $accent
 

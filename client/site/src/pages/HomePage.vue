@@ -1,6 +1,8 @@
 <template>
   <div class="q-pa-md">
-    <div class="q-gutter-md" style="max-width: 300px">
+    <img class="ico" src="../../public/from_site_logo.png">
+    <h4 class="press">Bienvenido al sitio administrativo del PCC</h4>
+    <div class="gutter-md" style="max-width: 300px">
       <q-file
         filled
         bottom-slots
@@ -16,7 +18,6 @@
             @click.stop="add_file = null"
             class="cursor-pointer"
           />
-          <q-icon name="create_new_folder" @click.stop />
         </template>
 
         <template v-slot:hint> Field hint </template>
@@ -33,6 +34,15 @@
 import axios from "axios";
 import { ref } from "vue";
 import { Cookies } from "quasar";
+import { Notify } from "quasar";
+import { useMeta } from "quasar";
+
+const metadata = {
+  title: 'PCC - Home',
+  // meta: {
+  //   description: {name: "Home", content:"MilitantPage"}
+  // }
+}
 
 export default {
   setup() {
@@ -43,6 +53,7 @@ export default {
         return formData;
       }, new FormData());
     return {
+      meta: useMeta(metadata),
       add_file,
       post() {
         const token = Cookies.get('auth-token')
@@ -54,7 +65,6 @@ export default {
             'Authorization': 'Token ' + token,
             },
         };
-        // console.log(form_file);
         axios
           .post(
             "http://localhost:8000/api/upload-militant/",
@@ -65,25 +75,30 @@ export default {
             Notify.create({
               icon: "done",
               color: "positive",
-              message: "Núcleao creado.",
+              message: "Archivo procesado.",
             });
           })
           .catch((err) => {
-            console.log(err.response);
-            // let errors = err.response.data.code;
-            // let msg = "";
-            // for (let index = 0; index < errors.length; index++) {
-            //   msg += errors[index];
-            //   if (index !== msg.length - 1) msg += " ";
-            // }
-            // Notify.create({
-            //   icon: "error",
-            //   color: "negative",
-            //   message: msg,
-            // });
+            Notify.create({
+              icon: "error",
+              color: "negative",
+              message: "ERROR! El archivo no se puede procesar.",
+            });
           });
       },
     };
   },
 };
 </script>
+
+<style>
+.ico{
+  margin-left: 660px;
+}
+.press{
+  margin-left: 400px;
+}
+.gutter-md{
+  margin-left: 40%;
+}
+</style>
