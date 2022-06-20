@@ -25,6 +25,7 @@
         :rules="nameRules"
       />
 
+<<<<<<< HEAD
       <q-select id="provi"
       ref="provinceRef"
       filled v-model="province"
@@ -33,6 +34,21 @@
       lazy-rules
       :rules="provinceRules"
       >
+=======
+      <q-select
+        ref="provinceRef"
+        filled v-model="province"
+        :options="poptions"
+        label="Provincia:"
+        lazy-rules
+        :rules="provinceRules"
+      >
+
+        <template v-slot:after>
+          <q-btn round dense flat icon="send" @click="" />
+        </template>
+      <q-select/>
+>>>>>>> afe748300a88862c2356a5cd973397cabad7b91e
 
       </q-select>
       <q-select class="muni"
@@ -182,7 +198,7 @@ export default {
       subordinate,
       subordinateRef,
       subordinateRules: [
-        (val) => (val && val.length > 0) || "Please type something",
+        (val) => (val && val.length > 0) || "Please type something"
       ],
 
       province,
