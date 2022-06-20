@@ -55,7 +55,6 @@
 import { defineComponent } from "vue";
 import { ref } from "vue";
 import { useMeta } from "quasar";
-import axios from "src/boot/axios";
 
 const columns = [
   {
@@ -124,7 +123,9 @@ export default defineComponent({
           console.log(err);
         });
     },
-    addRow() {},
+    addRow() {
+      this.$router.push("./addmilitant");
+    },
     removeRow() {
       this.$axios.delete(
         "http://localhost:8000/api/militant/" + this.selected[0].ci + "/"
@@ -132,7 +133,7 @@ export default defineComponent({
       window.location.reload();
     },
     modifyRow() {
-
+      this.$router.push("./modmilitant/" + this.selected[0].ci + "/")
     },
   },
   created() {

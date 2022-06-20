@@ -142,8 +142,7 @@ export default defineComponent({
       window.location.reload();
     },
     addRow() {
-      window.open("./addcore");
-      window.close();
+      this.$router.push("./addcore");
     },
     removeRow() {
       this.$axios.delete(

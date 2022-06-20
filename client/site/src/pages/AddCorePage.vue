@@ -25,7 +25,7 @@
         :rules="nameRules"
       />
 
-      <q-select class="provi"
+      <q-select id="provi"
       ref="provinceRef"
       filled v-model="province"
       :options="poptions"
@@ -34,11 +34,7 @@
       :rules="provinceRules"
       >
 
-      <template v-slot:after>
-          <q-btn round dense flat icon="send" @click="select_mun_list"/>
-      </template>
       </q-select>
-
       <q-select class="muni"
       ref="municipalityRef"
       filled v-model="municipality"
@@ -47,7 +43,13 @@
       lazy-rules
       :rules="municipalityRules"
       />
+    </form>
 
+    <form
+      @submit.prevent.stop="onSubmit"
+      @reset.prevent.stop="onReset"
+      class="q-gutter-md"
+    >
       <q-input
         ref="districtRef"
         filled
@@ -116,42 +118,7 @@ const metadata = {
 
 export default {
   methods:{
-    select_mun_list() {
-      const p_key = this.province.value;
-      console.log(p_key);
-      const values = {"Pinar del Río":["Pinar del Río", "San Juan y Martínez",
-    "Sandino", "Los Palacios", "Guane", "La Palma", "Minas de Matahambre", "Mantua"],
-    "La Habana":["Arroyo Naranjo", "Boyeros", "Centro Habana", "Cotorro", "Diez de Octubre",
-    "El Cerro", "Guanabacoa", "La Habana del Este", "La Habana Vieja", "La Lisa", "Marianao",
-    "Playa", "Plaza de la Revolución", "Regla", "San Miguel del Padrón"],
-    "Artemisa":["Mariel", "Guanajay", "Caimito", "Bauta", "San Antonio de los Baños",
-    "Güira de Melena", "Alquízar", "Artemisa", "Bahía Honda", "Candelaria", "San Cristóbal"],
-    "Mayabeque":["Bejucal", "San José de las Lajas", "Jaruco", "Santa Cruz del Norte", "Madruga",
-    "Nueva Paz", "San Nicolás de Bari", "Güines", "Melena del Sur", "Batabanó", "Quivicán"],
-    "Matanzas":["Algorta", "Arcos de Canasí", "Jagüey Grande", "Jovellanos", "Martí", "Matanzas",
-    "Calimete", "Cárdenas", "Ciénaga de Zapata", "Colón", "Limonar", "Los Arabos",
-    "Pedro Betancourt", "Perico", "Unión de Reyes"],
-    "Cienfuegos":["Abreus", "Aguada de Pasajeros", "Cienfuegos", "Cruces", "Cumanayagua",
-    "Lajas", "Palmira", "Rodas"],
-    "Sancti Spiritus":["Sancti Spíritus", "Trinidad", "Cabaiguán", "Yaguajay", "Jatibonico",
-    "Taguasco", "Fomento", "La Sierpe"],
-    "Villa Clara":["Caibarién", "Camajuaní", "Cifuentes", "Corralillo", "Encrucijada", "Manicaragua",
-    "Placetas", "Quemado de Güines", "Ranchuelo", "Remedios", "Sagua la Grande", "Santa Clara", "Santo Domingo"],
-    "Camagüey":["Camagüey", "Guáimaro", "Nuevitas", "Céspedes", "Jimaguayú", "Sibanicú", "Esmeralda",
-    "Minas", "Sierra de Cubitas", "Florida", "Najasa", "Vertientes", "Santa Cruz del Sur"],
-    "Holguín":["Antilla", "Báguanos", "Banes", "Cacocum", "Calixto García", "Cueto", "Frank País",
-    "Gibara", "Holguín", "Mayarí", "Moa", "Rafael Freyre", "Sagua de Tánamo", "Urbano Noris"],
-    "Guantánamo":["Baracoa", "Caimanera", "El Salvador", "Guantánamo", "Imías", "Maisí", "Manuel Tames",
-    "Niceto Pérez", "San Antonio del Sur", "Yateras"],
-    "Santiago de Cuba":["Contramaestre", 'Guamá', "Mella", 'Palma Soriano', "San Luis", "Santiago de Cuba",
-    "Segundo Frente", "Songo-La Maya", "Tercer Frente"],
-    "Granma":["Bartolomé Masó", "Bayamo", "Buey Arriba", "Campechuela", "Cauto Cristo", "Guisa",
-    "Jiguaní", "Manzanillo", "Media Luna", "Niquero", "Pilón", "Río Cauto", "Yara"],
-    "Isla de la Juventud":["Isla de la Juventud"]
-    };
-    console.log(values.p_key);
-    this.moptions = values.p_key;
-    },
+
   },
   setup() {
     const q = useQuasar();
@@ -187,7 +154,8 @@ export default {
       meta: useMeta(metadata),
       code,
       codeRef,
-      codeRules: [(val) => (val && val.length > 0 && val.length < 6) || "Please type something"],
+      codeRules: [(val) => (val && val.length > 0 && val.length < 6) || "Please type something",
+      ],
 
       name,
       nameRef,
@@ -221,7 +189,7 @@ export default {
       provinceRef,
       poptions: ['La Habana', "Pinar del Río", "Artemisa", 'Mayabeque',
       "Matanzas", "Cienfuegos", "Sancti Spiritus", "Villa Clara", "Camagüey", "Las Tunas",
-      "Holguín", "Guantánamo", "Santiago de Cuba", "Granma", "Isla de la Juventud (municipio especial)"],
+      "Holguín", "Guantánamo", "Santiago de Cuba", "Granma", "Isla de la Juventud"],
       provinceRules: [
         (val) => (val && val.length > 0) || "Please chose something",
       ],
@@ -240,6 +208,8 @@ export default {
         political_areaRef.value.validate();
         districtRef.value.validate();
         subordinateRef.value.validate();
+        municipalityRef.value.validate();
+        provinceRef.value.validate();
 
         if (
           nameRef.value.hasError ||
@@ -251,7 +221,36 @@ export default {
           subordinateRef.value.hasError ||
           municipalityRef.value.hasError
         ) {
-          console.log(province.value);
+          this.moptions = {"Pinar del Río":["Pinar del Río", "San Juan y Martínez",
+    "Sandino", "Los Palacios", "Guane", "La Palma", "Minas de Matahambre", "Mantua"],
+    "La Habana":["Arroyo Naranjo", "Boyeros", "Centro Habana", "Cotorro", "Diez de Octubre",
+    "El Cerro", "Guanabacoa", "La Habana del Este", "La Habana Vieja", "La Lisa", "Marianao",
+    "Playa", "Plaza de la Revolución", "Regla", "San Miguel del Padrón"],
+    "Artemisa":["Mariel", "Guanajay", "Caimito", "Bauta", "San Antonio de los Baños",
+    "Güira de Melena", "Alquízar", "Artemisa", "Bahía Honda", "Candelaria", "San Cristóbal"],
+    "Mayabeque":["Bejucal", "San José de las Lajas", "Jaruco", "Santa Cruz del Norte", "Madruga",
+    "Nueva Paz", "San Nicolás de Bari", "Güines", "Melena del Sur", "Batabanó", "Quivicán"],
+    "Matanzas":["Algorta", "Arcos de Canasí", "Jagüey Grande", "Jovellanos", "Martí", "Matanzas",
+    "Calimete", "Cárdenas", "Ciénaga de Zapata", "Colón", "Limonar", "Los Arabos",
+    "Pedro Betancourt", "Perico", "Unión de Reyes"],
+    "Cienfuegos":["Abreus", "Aguada de Pasajeros", "Cienfuegos", "Cruces", "Cumanayagua",
+    "Lajas", "Palmira", "Rodas"],
+    "Sancti Spiritus":["Sancti Spíritus", "Trinidad", "Cabaiguán", "Yaguajay", "Jatibonico",
+    "Taguasco", "Fomento", "La Sierpe"],
+    "Villa Clara":["Caibarién", "Camajuaní", "Cifuentes", "Corralillo", "Encrucijada", "Manicaragua",
+    "Placetas", "Quemado de Güines", "Ranchuelo", "Remedios", "Sagua la Grande", "Santa Clara", "Santo Domingo"],
+    "Camagüey":["Camagüey", "Guáimaro", "Nuevitas", "Céspedes", "Jimaguayú", "Sibanicú", "Esmeralda",
+    "Minas", "Sierra de Cubitas", "Florida", "Najasa", "Vertientes", "Santa Cruz del Sur"],
+    "Holguín":["Antilla", "Báguanos", "Banes", "Cacocum", "Calixto García", "Cueto", "Frank País",
+    "Gibara", "Holguín", "Mayarí", "Moa", "Rafael Freyre", "Sagua de Tánamo", "Urbano Noris"],
+    "Guantánamo":["Baracoa", "Caimanera", "El Salvador", "Guantánamo", "Imías", "Maisí", "Manuel Tames",
+    "Niceto Pérez", "San Antonio del Sur", "Yateras"],
+    "Santiago de Cuba":["Contramaestre", 'Guamá', "Mella", 'Palma Soriano', "San Luis", "Santiago de Cuba",
+    "Segundo Frente", "Songo-La Maya", "Tercer Frente"],
+    "Granma":["Bartolomé Masó", "Bayamo", "Buey Arriba", "Campechuela", "Cauto Cristo", "Guisa",
+    "Jiguaní", "Manzanillo", "Media Luna", "Niquero", "Pilón", "Río Cauto", "Yara"],
+    "Isla de la Juventud":["Isla de la Juventud"]
+    }[province.value];
           Notify.create({
             icon: "error",
             color: "negative",
@@ -278,7 +277,7 @@ export default {
                   color: "positive",
                   message: "Núcleo creado.",
                 });
-                window.open("./core");
+                window.open("./core/");
                 window.close();
               })
               .catch((err) => {
@@ -297,6 +296,48 @@ export default {
           } catch (err) {}
         }
       },
+
+      load_province() {
+      console.log("esto lo hago");
+      const selector = document.getElementById("provi");
+      const index = selector.selectedIndex;
+      if(index === -1) return;
+      const selected = selector.options[index];
+      alert(`Texto: ${selected.text}. Valor: ${selected.value}`);
+      console.log(selected);
+      const values = {"Pinar del Río":["Pinar del Río", "San Juan y Martínez",
+    "Sandino", "Los Palacios", "Guane", "La Palma", "Minas de Matahambre", "Mantua"],
+    "La Habana":["Arroyo Naranjo", "Boyeros", "Centro Habana", "Cotorro", "Diez de Octubre",
+    "El Cerro", "Guanabacoa", "La Habana del Este", "La Habana Vieja", "La Lisa", "Marianao",
+    "Playa", "Plaza de la Revolución", "Regla", "San Miguel del Padrón"],
+    "Artemisa":["Mariel", "Guanajay", "Caimito", "Bauta", "San Antonio de los Baños",
+    "Güira de Melena", "Alquízar", "Artemisa", "Bahía Honda", "Candelaria", "San Cristóbal"],
+    "Mayabeque":["Bejucal", "San José de las Lajas", "Jaruco", "Santa Cruz del Norte", "Madruga",
+    "Nueva Paz", "San Nicolás de Bari", "Güines", "Melena del Sur", "Batabanó", "Quivicán"],
+    "Matanzas":["Algorta", "Arcos de Canasí", "Jagüey Grande", "Jovellanos", "Martí", "Matanzas",
+    "Calimete", "Cárdenas", "Ciénaga de Zapata", "Colón", "Limonar", "Los Arabos",
+    "Pedro Betancourt", "Perico", "Unión de Reyes"],
+    "Cienfuegos":["Abreus", "Aguada de Pasajeros", "Cienfuegos", "Cruces", "Cumanayagua",
+    "Lajas", "Palmira", "Rodas"],
+    "Sancti Spiritus":["Sancti Spíritus", "Trinidad", "Cabaiguán", "Yaguajay", "Jatibonico",
+    "Taguasco", "Fomento", "La Sierpe"],
+    "Villa Clara":["Caibarién", "Camajuaní", "Cifuentes", "Corralillo", "Encrucijada", "Manicaragua",
+    "Placetas", "Quemado de Güines", "Ranchuelo", "Remedios", "Sagua la Grande", "Santa Clara", "Santo Domingo"],
+    "Camagüey":["Camagüey", "Guáimaro", "Nuevitas", "Céspedes", "Jimaguayú", "Sibanicú", "Esmeralda",
+    "Minas", "Sierra de Cubitas", "Florida", "Najasa", "Vertientes", "Santa Cruz del Sur"],
+    "Holguín":["Antilla", "Báguanos", "Banes", "Cacocum", "Calixto García", "Cueto", "Frank País",
+    "Gibara", "Holguín", "Mayarí", "Moa", "Rafael Freyre", "Sagua de Tánamo", "Urbano Noris"],
+    "Guantánamo":["Baracoa", "Caimanera", "El Salvador", "Guantánamo", "Imías", "Maisí", "Manuel Tames",
+    "Niceto Pérez", "San Antonio del Sur", "Yateras"],
+    "Santiago de Cuba":["Contramaestre", 'Guamá', "Mella", 'Palma Soriano', "San Luis", "Santiago de Cuba",
+    "Segundo Frente", "Songo-La Maya", "Tercer Frente"],
+    "Granma":["Bartolomé Masó", "Bayamo", "Buey Arriba", "Campechuela", "Cauto Cristo", "Guisa",
+    "Jiguaní", "Manzanillo", "Media Luna", "Niquero", "Pilón", "Río Cauto", "Yara"],
+    "Isla de la Juventud":["Isla de la Juventud"]
+    };
+    console.log(values.selected);
+    this.moptions = values.selected;
+    },
 
       onReset() {
         this.code = null;
