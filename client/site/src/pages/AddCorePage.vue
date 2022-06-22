@@ -32,7 +32,7 @@
         label="Provincia:"
         lazy-rules
         :rules="provinceRules"
-      >
+      />
 
         <template v-slot:after>
           <q-btn round dense flat icon="send" @click="" />

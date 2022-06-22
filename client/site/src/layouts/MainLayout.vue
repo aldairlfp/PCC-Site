@@ -1,25 +1,6 @@
 <template>
   <q-layout view="hHh lpR fFf">
-    <q-header elevated class="bg-primary text-white">
-      <q-toolbar>
-        <q-btn dense flat round icon="menu" @click="toggleLeftDrawer" />
-
-        <q-toolbar-title>
-          <q-avatar>
-            <img src="../../public/from_site_logo.png" />
-          </q-avatar>
-          Sitio Administrativo UH PCC
-        </q-toolbar-title>
-      </q-toolbar>
-    </q-header>
-
-    <q-drawer
-      v-model="leftDrawerOpen"
-      side="left"
-      overlay
-      behavior="desktop"
-      elevated
-    >
+    <q-drawer v-model="leftDrawerOpen" side="left" overlay behavior="desktop" elevated>
       <div class="q-pa-md" style="max-width: 350px">
         <q-list bordered separator>
           <q-item clickable v-ripple>
@@ -54,13 +35,36 @@
               </a>
             </q-item-section>
           </q-item>
+
+          <q-item clickable v-ripple>
+            <q-item-section>
+              <a href="/testing">
+                <q-item-label overline>Pagina de Testing</q-item-label>
+                <q-item-label>Item with caption</q-item-label>
+              </a>
+            </q-item-section>
+          </q-item>
+
         </q-list>
       </div>
     </q-drawer>
+    <div class="">
+      <q-header elevated class="bg-primary text-white">
+        <q-toolbar>
+          <q-btn dense flat round icon="menu" @click="toggleLeftDrawer" />
+          <q-toolbar-title>
+            <q-avatar>
+              <img src="../../public/from_site_logo.png" />
+            </q-avatar>
+            Sitio Administrativo UH PCC
+          </q-toolbar-title>
+        </q-toolbar>
+      </q-header>
 
-    <q-page-container>
-      <router-view />
-    </q-page-container>
+      <q-page-container>
+        <router-view />
+      </q-page-container>
+    </div>
   </q-layout>
 </template>
 
@@ -71,7 +75,6 @@ export default defineComponent({
   name: "MainLayout",
   setup() {
     const leftDrawerOpen = ref(false);
-
     return {
       leftDrawerOpen,
       toggleLeftDrawer() {
