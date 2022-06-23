@@ -2,7 +2,9 @@
   <MyQTable 
   title="Militantes" 
   request-direction="http://localhost:8000/api/militant/" 
-  v-bind:tableHeaders="columns" 
+  v-bind:tableHeaders="columns"
+  cardAction= 'Agregar Militantes'
+  someColor="text" 
   />
 </template>
 

@@ -9,7 +9,7 @@
             :filter="filter" selection="single" v-model:selected="selected" :separator="separator">
             <template v-slot:top>
                 <q-btn color="primary" :disable="loading" label="Agregar" @click="fixed = true" />
-                <q-btn class="q-ml-sm" color="primary" :disable="loading" label="Modificar" @click="modifyRow" />
+                <q-btn class="q-ml-sm" color="primary" :disable="loading" label="Detalles" @click="modifyRow" />
                 <q-btn class="q-ml-sm" color="accent" :disable="loading" label="Eliminar" @click="persistent = true" />
                 <q-space />
                 <q-input borderless dense debounce="300" color="primary" v-model="filter">
@@ -20,26 +20,24 @@
             </template>
         </q-table>
 
-        <div class="q-pa-md q-gutter-sm">
+        <div class="q-pa-md q-gutter-sm" style="backgroud-color:red">
             <q-dialog v-model="fixed">
                 <q-card>
                     <q-card-section>
-                        <div class="text-h6">Terms of Agreement</div>
+                        <div class="text-h6">{{ cardAction }}</div>
                     </q-card-section>
 
                     <q-separator />
 
-                    <q-card-section style="max-height: 50vh" class="scroll">
-                        <p v-for="n in 15" :key="n">Lorem ipsum dolor sit amet consectetur adipisicing elit. Rerum
-                            repellendus sit voluptate voluptas eveniet porro. Rerum blanditiis perferendis totam, ea at
-                            omnis vel numquam exercitationem aut, natus minima, porro labore.</p>
+                    <q-card-section style="max-height: 70vh; min-width: 500px;" class="scroll">
+                        <q-input v-model="inputTipe" />
                     </q-card-section>
 
                     <q-separator />
 
-                    <q-card-actions align="right">
-                        <q-btn flat label="Decline" color="primary" v-close-popup />
-                        <q-btn flat label="Accept" color="primary" v-close-popup />
+                    <q-card-actions align="center">
+                        <q-btn flat label="Aceptar" color="primary" v-close-popup />
+                        <q-btn flat label="Cancelar" color="primary" v-close-popup />
                     </q-card-actions>
                 </q-card>
             </q-dialog>
@@ -75,16 +73,21 @@ import { Cookies } from "quasar";
 export default ({
     props: {
         'title': String,
+        'cardAction': String,
         'requestDirection': String,
         'tableHeaders': Array,
-        'visibilityVar': String,
+        'cardFields': Array,
+        'cardFieldsSpecifications': Array,
     },
     data() {
+        const inputTipe = this.cardFields
         return {
 
             persistent: ref(false),
             basic: ref(false),
             fixed: ref(false),
+
+            inputTipe,
 
             selected: ref([]),
             rows: [],
@@ -92,10 +95,12 @@ export default ({
             filter: ref(""),
             rowCount: ref(10),
             separator: ref("cell"),
-            lorem: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.'
         };
     },
     methods: {
+        prepareCard() {
+            inputTipe = this.someColor
+        },
         getData() {
             const token = Cookies.get('auth-token')
             this.$axios
@@ -119,7 +124,6 @@ export default ({
             }
         },
         addRow() {
-
         },
         removeRow() {
             try {
@@ -129,8 +133,10 @@ export default ({
                     this.requestDirection + this.selected[0].ci, {
                     headers: {
                         'Authorization': 'Token ' + token,
+                        'Access-Control-Allow-Origin': this.requestDirection + this.selected[0].ci,
                     }
                 })
+                // window.location.reload();
             }
             catch {
                 Notify.create({
@@ -139,7 +145,6 @@ export default ({
                     color: "accent",
                 })
             }
-            // window.location.reload();
         },
         modifyRow() {
 
@@ -147,7 +152,7 @@ export default ({
     },
     mounted() {
         this.verifyAuth()
-        this.getData();
+        this.getData()
     },
 });
 </script>
