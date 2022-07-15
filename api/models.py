@@ -135,7 +135,7 @@ class Militant(models.Model):
     def payment_contribution(self):
         payments = Payment.objects.filter(
             payment_declaration__militant__ci=self.ci)
-        return Payment
+        return payments
 
     def payment_declaration(self):
         return PaymentDeclaration.objects.filter(militant=self.ci)
