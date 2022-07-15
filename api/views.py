@@ -1,7 +1,7 @@
 from rest_framework.views import APIView, Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
-from django.http import HttpResponse
+from django.http import Http404, HttpResponse
 from django.contrib.auth.models import User, Group, Permission
 
 import json
@@ -9,6 +9,13 @@ import requests
 
 from .serializers import *
 from .models import Address, Militant, PaymentNorm, Core, Payment
+
+
+def detail(queryset, msg_error):
+    if len(queryset) > 0:
+        return queryset[0]
+    else:
+        return Response(msg_error, status=status.HTTP_404_NOT_FOUND)
 
 
 class Address_APIView(APIView):
@@ -29,17 +36,18 @@ class Address_APIView(APIView):
 
 
 class Address_APIView_Detail(APIView):
-    def get_queryset(self, pk):
-        return get_object_or_404(Address, pk=pk)
+    def get_queryset(self):
+        address = Address.objects.filter(pk=self.kwargs['pk'])
+        return address
 
-    def get(self, request, pk, format=None):
-        address = self.get_queryset(pk)
+    def get(self, request, format=None):
+        address = detail(self.get_queryset(), 'Address does not exist.')
         serializer = AddressSerializer(address)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    def put(self, request, pk, format=None):
-        address = self.get_queryset(pk)
-        serializer = AddressSerializer(data=request.data)
+    def put(self, request, format=None):
+        address = detail(self.get_queryset(), 'Address does not exist.')
+        serializer = AddressSerializer(address, data=request.data)
         if serializer.is_valid():
             serializer.update(address, serializer.data)
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -69,17 +77,15 @@ class DeclarationDate_APIView(APIView):
 
 
 class DeclarationDate_APIView_Detail(APIView):
-    def get_queryset(self, pk):
-        return get_object_or_404(DeclarationDate, pk)
+    def get_queryset(self):
+        declaration_date = DeclarationDate.objects.filter(pk=self.kwargs['pk'])
+        return declaration_date
 
-    def get(self, request, pk, format=None):
-        address = self.get_queryset(pk)
-        serializer = AddressSerializer(address)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-    def put(self, request, pk, format=None):
-        declaration_date = self.get_queryset(pk)
-        serializer = DeclarationDateSerializer(data=serializer.data)
+    def put(self, request, format=None):
+        declaration_date = detail(
+            self.get_queryset(), 'Declaration date does not exist.')
+        serializer = DeclarationDateSerializer(
+            declaration_date, data=request.data)
         if serializer.is_valid():
             serializer.update(declaration_date, serializer.data)
         return Response(serializer.errors, status=status.HTTP_200_OK)
@@ -108,17 +114,13 @@ class PaymentDate_APIView(APIView):
 
 
 class PaymentDate_APIView_Detail(APIView):
-    def get_queryset(self, pk):
-        return get_object_or_404(PaymentDate, pk=pk)
-
-    def get(self, request, pk, format=None):
-        payment_date = self.get_queryset(pk)
-        serializer = CoreSerializer(payment_date)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+    def get_queryset(self):
+        return PaymentDate.objects.filter(pk=self.kwargs['pk'])
 
     def put(self, request, pk, format=None):
-        payment_date = self.get_queryset(pk)
-        serializer = PaymentDateSerializer(data=request.data)
+        payment_date = detail(self.get_queryset(),
+                              'Payment date does not exist')
+        serializer = PaymentDateSerializer(payment_date, data=request.data)
         if serializer.is_valid():
             serializer.update(payment_date, serializer.data)
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -148,17 +150,17 @@ class Core_APIView(APIView):
 
 
 class Core_APIView_Detail(APIView):
-    def get_queryset(self, pk):
-        return get_object_or_404(Core, pk=pk)
+    def get_queryset(self):
+        return Core.objects.filter(pk=self.kwargs['pk'])
 
     def get(self, request, pk, format=None):
-        core = self.get_queryset(pk)
-        serializer = CoreSerializer(core)
+        core = detail(self.get_queryset(), 'Core does not exist.')
+        serializer = CoreDetailSerializer(core)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def put(self, request, pk, format=None):
         core = self.get_queryset(pk)
-        serializer = CoreSerializer(data=request.data)
+        serializer = CoreSerializer(core, data=request.data)
         if serializer.is_valid():
             serializer.update(core, serializer.data)
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -189,17 +191,17 @@ class Militant_APIView(APIView):
 
 
 class Militant_APIView_Detail(APIView):
-    def get_queryset(self, pk):
-        militant = get_object_or_404(Militant, pk=pk)
+    def get_queryset(self):
+        militant = Militant.objects.filter(pk=self.kwargs['pk'])
         return militant
 
     def get(self, request, pk, format=None):
-        militant = self.get_queryset(pk)
+        militant = detail(self.get_queryset(), 'Militant does not exist')
         serializer = MilitantDeclarationsSerializer(militant)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def put(self, request, pk, format=None):
-        militant = self.get_queryset(pk)
+        militant = detail(self.get_queryset(), 'Militant does not exist')
         serializer = MilitantDeclarationsSerializer(
             militant, data=request.data)
         if serializer.is_valid():
@@ -253,7 +255,7 @@ class Debts_APIView(APIView):
 
 class Debts_APIViews_Detail(APIView):
     def get_queryset(self):
-        return Militant.objects.none
+        return Militant.objects.filter(pk=self.kwargs['pk'])
 
     def get(self, request, pk, format=None):
         militant = Militant.objects.filter(pk=pk)
@@ -286,17 +288,17 @@ class User_APIView(APIView):
 
 
 class User_APIView_Detail(APIView):
-    def get_queryset(self, pk):
-        return get_object_or_404(User, pk=pk)
+    def get_queryset(self):
+        return User.objects.filter(pk=self.kwargs['pk'])
 
-    def get(self, request, pk, format=None):
-        user = self.get_queryset(pk)
+    def get(self, request, format=None):
+        user = detail(self.get_queryset(), 'User does not exist')
         serializer = UserSerializer(user)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def put(self, request, pk, format=None):
-        user = self.get_queryset(pk)
-        serializer = UserSerializer(user)
+        user = detail(self.get_queryset(), 'User does not exist')
+        serializer = UserSerializer(user, request.data)
         if serializer.is_valid():
             serializer.update(user, serializer.data)
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -320,18 +322,27 @@ class Group_APIView(APIView):
 
 
 class Group_APIViews_Details(APIView):
-    def get_queryset(self, pk):
+    def get_queryset(self):
         Permission.objects.all()
-        return get_object_or_404(Group, pk=pk)
+        return Group.objects.filter(pk=self.kwargs['pk'])
 
-    def get(self, request, pk, format=None):
-        serializer = GroupSerializer(self.get_queryset(pk))
-        return Response(serializer.data)
+    def get(self, request, format=None):
+        group = detail(self.get_queryset(), 'Group does not exist')
+        serializer = GroupSerializer(group)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def put(self, request, pk, format=None):
-        auth_group = self.get_queryset(pk)
-        serializer = GroupSerializer(data=request.data)
+        group = detail(self.get_queryset(), 'Group does not exist')
+        serializer = GroupSerializer(Group, request.data)
         if serializer.is_valid():
-            serializer.update(auth_group, serializer.data)
+            serializer.update(group, serializer.data)
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class Permission_APIView(APIView):
+    def get_queryset(self):
+        return Permission.objects.all()
+
+    def get(self, request, format=None):
+        serializer = PermissionSerializer(self.get_queryset(), many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
