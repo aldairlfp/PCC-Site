@@ -131,6 +131,27 @@ class Militant(models.Model):
     address = models.ForeignKey(Address, on_delete=models.CASCADE, null=True)
     payment_declaration = models.ManyToManyField(
         DeclarationDate, through='PaymentDeclaration')
+    
+    house_phone = models.CharField(max_length=10,  null=True)
+    work_phone = models.CharField(max_length=10,  null=True)
+    cell_phone  = models.CharField(max_length=10,  null=True)
+
+    email = models.CharField(max_length=100,  null=True)
+    pcc_position = models.CharField(max_length=20,  null=True)
+    observations = models.CharField(max_length=100,  null=True) 
+    pcc_reserve_position = models.CharField(max_length=20,  null=True)
+    institutional_reserve_positon = models.CharField(max_length=100,  null=True)
+   
+    birth_year = models.PositiveIntegerField(null=True)
+    age = models.PositiveIntegerField(null=True)
+    
+    job = models.CharField(max_length=100,  null=True)
+    job_clasification = models.CharField(max_length=100,  null=True)
+    no_ci = models.CharField(max_length=20,  null=True)
+    fundator = models.BooleanField(default=False)
+    skin_color = models.CharField(max_length=1,  null=True)
+    scolarity = models.PositiveIntegerField(null=True) 
+    work_file = models.CharField(max_length=20, null=True)
 
     def payment_contribution(self):
         payments = Payment.objects.filter(
