@@ -1,3 +1,5 @@
+from functools import partial
+from numpy import true_divide
 from rest_framework.views import APIView, Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
@@ -46,9 +48,9 @@ class Address_APIView_Detail(APIView):
 
     def put(self, request, format=None):
         address = detail(self.get_queryset(), 'Address does not exist.')
-        serializer = AddressSerializer(address, data=request.data)
+        serializer = AddressSerializer(address, data=request.data, partial=True)
         if serializer.is_valid():
-            serializer.update(address, serializer.data)
+            serializer.save(address, serializer.data)
             return Response(serializer.data, status=status.HTTP_200_OK, headers={'Access-Control-Allow-Origin': '*'})
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST, headers={'Access-Control-Allow-Origin': '*'})
 
@@ -84,9 +86,9 @@ class DeclarationDate_APIView_Detail(APIView):
         declaration_date = detail(
             self.get_queryset(), 'Declaration date does not exist.')
         serializer = DeclarationDateSerializer(
-            declaration_date, data=request.data)
+            declaration_date, data=request.data, partial=True)
         if serializer.is_valid():
-            serializer.update(declaration_date, serializer.data)
+            serializer.save(declaration_date, serializer.data)
         return Response(serializer.errors, status=status.HTTP_200_OK, headers={'Access-Control-Allow-Origin': '*'})
 
     def delete(self, request, pk, format=None):
@@ -119,9 +121,9 @@ class PaymentDate_APIView_Detail(APIView):
     def put(self, request, pk, format=None):
         payment_date = detail(self.get_queryset(),
                               'Payment date does not exist')
-        serializer = PaymentDateSerializer(payment_date, data=request.data)
+        serializer = PaymentDateSerializer(payment_date, data=request.data, partial=True)
         if serializer.is_valid():
-            serializer.update(payment_date, serializer.data)
+            serializer.save(payment_date, serializer.data)
             return Response(serializer.data, status=status.HTTP_200_OK, headers={'Access-Control-Allow-Origin': '*'})
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST, headers={'Access-Control-Allow-Origin': '*'})
 
@@ -159,9 +161,9 @@ class Core_APIView_Detail(APIView):
 
     def put(self, request, pk, format=None):
         core = detail(self.get_queryset(), 'Core does not exist.')
-        serializer = CoreSerializer(core, data=request.data)
+        serializer = CoreSerializer(core, data=request.data, partial=True, partial=True)
         if serializer.is_valid():
-            serializer.update(core, serializer.data)
+            serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK, headers={'Access-Control-Allow-Origin': '*'})
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST, headers={'Access-Control-Allow-Origin': '*'})
 
@@ -202,9 +204,9 @@ class Militant_APIView_Detail(APIView):
     def put(self, request, pk, format=None):
         militant = detail(self.get_queryset(), 'Militant does not exist')
         serializer = MilitantDeclarationsSerializer(
-            militant, data=request.data)
+            militant, data=request.data, partial=True)
         if serializer.is_valid():
-            serializer.update(militant, serializer.data)
+            serializer.save(militant, serializer.data)
             return Response(serializer.data, status=status.HTTP_200_OK, headers={'Access-Control-Allow-Origin': '*'})
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST, headers={'Access-Control-Allow-Origin': '*'})
 
@@ -299,7 +301,7 @@ class User_APIView_Detail(APIView):
         user = detail(self.get_queryset(), 'User does not exist')
         serializer = UserSerializer(user, request.data)
         if serializer.is_valid():
-            serializer.update(user, serializer.data)
+            serializer.save(user, serializer.data)
             return Response(serializer.data, status=status.HTTP_200_OK, headers={'Access-Control-Allow-Origin': '*'})
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST, headers={'Access-Control-Allow-Origin': '*'})
 
@@ -334,7 +336,7 @@ class Group_APIViews_Details(APIView):
         group = detail(self.get_queryset(), 'Group does not exist')
         serializer = GroupSerializer(Group, request.data)
         if serializer.is_valid():
-            serializer.update(group, serializer.data)
+            serializer.save(group, serializer.data)
             return Response(serializer.data, status=status.HTTP_200_OK, headers={'Access-Control-Allow-Origin': '*'})
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST, headers={'Access-Control-Allow-Origin': '*'})
 
