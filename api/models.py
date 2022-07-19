@@ -252,6 +252,24 @@ class PaymentDeclaration(models.Model):
         return list(reversed(declarations))
 
     def save(self, *args, **kwargs):
+        norms = PaymentNorm.objects.all().order_by('lower_limit')
+        for norm in norms:
+            if norm.upper_limit == 0 and norm.lower_limit <= self.salary:
+                if norm.amount_to_pay > 0:
+                    self.share = norm.amount_to_pay
+                    self.norm = norm
+                else:
+                    self.norm = norm
+                    self.share = self.salary * norm.percent / 100
+                break
+            elif self.salary >= norm.lower_limit and self.salary <= norm.upper_limit:
+                if norm.amount_to_pay > 0:
+                    self.norm = norm
+                    self.share = norm.amount_to_pay
+                else:
+                    self.norm = norm
+                    self.share = self.salary * norm.percent / 100
+                break
         super().save(*args, **kwargs)
         declarations_query = PaymentDeclaration.objects.filter(
             militant=self.militant, year=self.year, month=self.month).order_by('-year', '-month', '-declaration_date')
@@ -280,7 +298,7 @@ class Payment(models.Model):
 
     class Meta:
         db_table = 'payment'
-        # unique_together = (('payment_declaration', 'payment_date'))
+        unique_together = (('payment_declaration', 'payment_date'))
 
 
 class Task(models.Model):

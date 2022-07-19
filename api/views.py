@@ -15,7 +15,7 @@ def detail(queryset, msg_error):
     if len(queryset) > 0:
         return queryset[0]
     else:
-        return Response(msg_error, status=status.HTTP_404_NOT_FOUND)
+        return Response(msg_error, status=status.HTTP_404_NOT_FOUND, headers={'Access-Control-Allow-Origin': '*'})
 
 
 class Address_APIView(APIView):
@@ -42,12 +42,17 @@ class Address_APIView_Detail(APIView):
 
     def get(self, request, format=None):
         address = detail(self.get_queryset(), 'Address does not exist.')
+        if len(self.get_queryset()) == 0:
+            return address
         serializer = AddressSerializer(address)
         return Response(serializer.data, status=status.HTTP_200_OK, headers={'Access-Control-Allow-Origin': '*'})
 
     def put(self, request, format=None):
         address = detail(self.get_queryset(), 'Address does not exist.')
-        serializer = AddressSerializer(address, data=request.data, partial=True)
+        if len(self.get_queryset()) == 0:
+            return address
+        serializer = AddressSerializer(
+            address, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK, headers={'Access-Control-Allow-Origin': '*'})
@@ -55,6 +60,8 @@ class Address_APIView_Detail(APIView):
 
     def delete(self, request, pk, format=None):
         address = detail(self.get_queryset(), 'Address does not exist.')
+        if len(self.get_queryset()) == 0:
+            return address
         address.delete()
         return Response({'detail': 'Address deleted'}, status=status.HTTP_200_OK, headers={'Access-Control-Allow-Origin': '*'})
 
@@ -82,16 +89,21 @@ class DeclarationDate_APIView_Detail(APIView):
         return declaration_date
 
     def put(self, request, format=None):
-        declaration_date = detail(
-            self.get_queryset(), 'Declaration date does not exist.')
+        declaration = detail(self.get_queryset(), 'Declaration date does not exist.')
+        if len(self.get_queryset()) == 0:
+            return declaration
         serializer = DeclarationDateSerializer(
-            declaration_date, data=request.data, partial=True)
+            declaration, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
-        return Response(serializer.errors, status=status.HTTP_200_OK, headers={'Access-Control-Allow-Origin': '*'})
+            return Response(serializer.data, status=status.HTTP_200_OK, headers={'Access-Control-Allow-Origin': '*'})
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST, headers={'Access-Control-Allow-Origin': '*'})
 
     def delete(self, request, pk, format=None):
-        declaration_date = detail(self.get_queryset(), 'Declaration date does not exist.')
+        declaration_date = detail(
+            self.get_queryset(), 'Declaration date does not exist.')
+        if len(self.get_queryset()) == 0:
+            return declaration_date
         declaration_date.delete()
         return Response({'detail': 'Declaration date deleted'}, status=status.HTTP_200_OK, headers={'Access-Control-Allow-Origin': '*'})
 
@@ -117,22 +129,27 @@ class PaymentDate_APIView_Detail(APIView):
     def get_queryset(self):
         return PaymentDate.objects.filter(pk=self.kwargs['pk'])
 
-    def put(self, request, pk, format=None):
-        payment_date = detail(self.get_queryset(),
-                              'Payment date does not exist')
-        serializer = PaymentDateSerializer(payment_date, data=request.data, partial=True)
+    def put(self, request, format=None):
+        payment_date = detail(self.get_queryset(), 'Payment date does not exist.')
+        if len(self.get_queryset()) == 0:
+            return payment_date
+        serializer = PaymentDateSerializer(
+            payment_date, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK, headers={'Access-Control-Allow-Origin': '*'})
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST, headers={'Access-Control-Allow-Origin': '*'})
 
     def delete(self, request, pk, format=None):
-        core = get_object_or_404(Core, pk=pk)
-        core.delete()
+        payment_date = detail(self.get_queryset(),
+                              'Payment date does not exist.')
+        if len(self.get_queryset()) == 0:
+            return payment_date
+        payment_date.delete()
         return HttpResponse({'detail': 'Payment date deleted'}, status=status.HTTP_204_NO_CONTENT, headers={'Access-Control-Allow-Origin': '*'})
 
 
-class Core_APIView(APIView):    
+class Core_APIView(APIView):
     def get_queryset(self):
         return Core.objects.all()
 
@@ -155,11 +172,15 @@ class Core_APIView_Detail(APIView):
 
     def get(self, request, pk, format=None):
         core = detail(self.get_queryset(), 'Core does not exist.')
+        if len(self.get_queryset()) == 0:
+            return core
         serializer = CoreDetailSerializer(core)
         return Response(serializer.data, status=status.HTTP_200_OK, headers={'Access-Control-Allow-Origin': '*'})
 
     def put(self, request, pk, format=None):
         core = detail(self.get_queryset(), 'Core does not exist.')
+        if len(self.get_queryset()) == 0:
+            return core
         serializer = CoreSerializer(core, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
@@ -167,10 +188,50 @@ class Core_APIView_Detail(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST, headers={'Access-Control-Allow-Origin': '*'})
 
     def delete(self, request, pk, format=None):
-        core = get_object_or_404(Core, pk=pk)
+        core = detail(self.get_queryset(), 'Core does not exist.')
+        if len(self.get_queryset()) == 0:
+            return core
         core.delete()
         return HttpResponse({'detail': 'Core deleted'}, status=status.HTTP_204_NO_CONTENT, headers={'Access-Control-Allow-Origin': '*'})
 
+class PaymentNorm_APIView(APIView):
+    def get_queryset(self):
+        return PaymentNorm.objects.all()
+
+    def get(self, request, format=None):
+        serializer = PaymentNormSerializer(
+            self.get_queryset(), many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK, headers={'Access-Control-Allow-Origin': '*'})
+
+    def post(self, request, format=None):
+        serializer = PaymentNormSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED, headers={'Access-Control-Allow-Origin': '*'})
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST, headers={'Access-Control-Allow-Origin': '*'})
+
+class PaymentNorm_APIView_Detail(APIView):
+    def get_queryset(self):
+        return PaymentNorm.objects.filter(pk=self.kwargs['pk'])
+
+    def put(self, request, format=None):
+        payment_norm = detail(self.get_queryset(), 'Payment norm does not exist.')
+        if len(self.get_queryset()) == 0:
+            return payment_norm
+        serializer = PaymentNormSerializer(
+            payment_norm, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK, headers={'Access-Control-Allow-Origin': '*'})
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST, headers={'Access-Control-Allow-Origin': '*'})
+
+    def delete(self, request, pk, format=None):
+        payment_norm = detail(self.get_queryset(),
+                              'Payment norm does not exist.')
+        if len(self.get_queryset()) == 0:
+            return payment_norm
+        payment_norm.delete()
+        return HttpResponse({'detail': 'Payment norm deleted'}, status=status.HTTP_204_NO_CONTENT, headers={'Access-Control-Allow-Origin': '*'})
 
 class Militant_APIView(APIView):
     def get_queryset(self):
@@ -179,7 +240,7 @@ class Militant_APIView(APIView):
 
     def get(self, request, format=None, *args, **kwargs):
         militant = self.get_queryset()
-        serializer = MilitantSerializer(militant, many=True)
+        serializer = MilitantDeclarationsSerializer(militant, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK, headers={'Access-Control-Allow-Origin': '*'})
 
     def post(self, request, format=None):
@@ -210,14 +271,21 @@ class Militant_APIView_Detail(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST, headers={'Access-Control-Allow-Origin': '*'})
 
     def delete(self, request, pk, format=None):
-        militant = detail(self.get_queryset(), 'Militant does not exist') 
+        militant = detail(self.get_queryset(), 'Militant does not exist')
+        if len(self.get_queryset()) == 0:
+            return militant
         militant.delete()
-        return HttpResponse({'detail': 'Militant deleted'}, status=status.HTTP_400_BAD_REQUEST, headers={'Access-Control-Allow-Origin': '*'})
+        return Response({'detail': 'Militant deleted'}, status=status.HTTP_400_BAD_REQUEST, headers={'Access-Control-Allow-Origin': '*'})
 
 
 class PaymentDeclaration_APIView(APIView):
     def get_queryset(self):
         return PaymentDeclaration.objects.all()
+        
+    def get(self, request, format=None):
+        serializer = PaymentDeclarationSerializer(
+            self.get_queryset(), many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK, headers={'Access-Control-Allow-Origin': '*'})
 
     def post(self, request, format=None):
         serializer = PaymentDeclarationSerializer(data=request.data)
@@ -233,7 +301,7 @@ class Payment_APIView(APIView):
 
     def get(self, request, format=None):
         payment = self.get_queryset()
-        serializer = PaymentSerializer(payment)
+        serializer = PaymentSerializer(payment, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK, headers={'Access-Control-Allow-Origin': '*'})
 
     def post(self, request, format=None):
@@ -293,16 +361,27 @@ class User_APIView_Detail(APIView):
 
     def get(self, request, format=None):
         user = detail(self.get_queryset(), 'User does not exist')
+        if len(self.get_queryset()) == 0:
+            return user
         serializer = UserSerializer(user)
         return Response(serializer.data, status=status.HTTP_200_OK, headers={'Access-Control-Allow-Origin': '*'})
 
     def put(self, request, pk, format=None):
         user = detail(self.get_queryset(), 'User does not exist')
+        if len(self.get_queryset()) == 0:
+            return user
         serializer = UserSerializer(user, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK, headers={'Access-Control-Allow-Origin': '*'})
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST, headers={'Access-Control-Allow-Origin': '*'})
+
+    def delete(self, request, pk, format=None):
+        user = detail(self.get_queryset(), 'Militant does not exist')
+        if len(self.get_queryset()) == 0:
+            return user
+        user.delete()
+        return HttpResponse({'detail': 'User deleted'}, status=status.HTTP_400_BAD_REQUEST, headers={'Access-Control-Allow-Origin': '*'})
 
 
 class Group_APIView(APIView):
@@ -328,17 +407,27 @@ class Group_APIViews_Details(APIView):
 
     def get(self, request, format=None):
         group = detail(self.get_queryset(), 'Group does not exist')
+        if len(self.get_queryset()) == 0:
+            return group
         serializer = GroupSerializer(group)
         return Response(serializer.data, status=status.HTTP_200_OK, headers={'Access-Control-Allow-Origin': '*'})
 
     def put(self, request, pk, format=None):
         group = detail(self.get_queryset(), 'Group does not exist')
+        if len(self.get_queryset()) == 0:
+            return group
         serializer = GroupSerializer(group, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK, headers={'Access-Control-Allow-Origin': '*'})
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST, headers={'Access-Control-Allow-Origin': '*'})
 
+    def delete(self, request, pk, format=None):
+        group = detail(self.get_queryset(), 'Group does not exist')
+        if len(self.get_queryset()) == 0:
+            return group
+        group.delete()
+        return HttpResponse({'detail': 'Group deleted'}, status=status.HTTP_400_BAD_REQUEST, headers={'Access-Control-Allow-Origin': '*'})
 
 class Permission_APIView(APIView):
     def get_queryset(self):
