@@ -131,6 +131,27 @@ class Militant(models.Model):
     address = models.ForeignKey(Address, on_delete=models.CASCADE, null=True)
     payment_declaration = models.ManyToManyField(
         DeclarationDate, through='PaymentDeclaration')
+    
+    house_phone = models.CharField(max_length=10,  null=True)
+    work_phone = models.CharField(max_length=10,  null=True)
+    cell_phone  = models.CharField(max_length=10,  null=True)
+
+    email = models.CharField(max_length=100,  null=True)
+    pcc_position = models.CharField(max_length=20,  null=True)
+    observations = models.CharField(max_length=100,  null=True) 
+    pcc_reserve_position = models.CharField(max_length=20,  null=True)
+    institutional_reserve_positon = models.CharField(max_length=100,  null=True)
+   
+    birth_year = models.PositiveIntegerField(null=True)
+    age = models.PositiveIntegerField(null=True)
+    
+    job = models.CharField(max_length=100,  null=True)
+    job_clasification = models.CharField(max_length=100,  null=True)
+    no_ci = models.CharField(max_length=20,  null=True)
+    fundator = models.BooleanField(default=False)
+    skin_color = models.CharField(max_length=1,  null=True)
+    scolarity = models.PositiveIntegerField(null=True) 
+    work_file = models.CharField(max_length=20, null=True)
 
     def payment_contribution(self):
         payments = Payment.objects.filter(
@@ -231,6 +252,24 @@ class PaymentDeclaration(models.Model):
         return list(reversed(declarations))
 
     def save(self, *args, **kwargs):
+        norms = PaymentNorm.objects.all().order_by('lower_limit')
+        for norm in norms:
+            if norm.upper_limit == 0 and norm.lower_limit <= self.salary:
+                if norm.amount_to_pay > 0:
+                    self.share = norm.amount_to_pay
+                    self.norm = norm
+                else:
+                    self.norm = norm
+                    self.share = self.salary * norm.percent / 100
+                break
+            elif self.salary >= norm.lower_limit and self.salary <= norm.upper_limit:
+                if norm.amount_to_pay > 0:
+                    self.norm = norm
+                    self.share = norm.amount_to_pay
+                else:
+                    self.norm = norm
+                    self.share = self.salary * norm.percent / 100
+                break
         super().save(*args, **kwargs)
         declarations_query = PaymentDeclaration.objects.filter(
             militant=self.militant, year=self.year, month=self.month).order_by('-year', '-month', '-declaration_date')
@@ -259,7 +298,7 @@ class Payment(models.Model):
 
     class Meta:
         db_table = 'payment'
-        # unique_together = (('payment_declaration', 'payment_date'))
+        unique_together = (('payment_declaration', 'payment_date'))
 
 
 class Task(models.Model):

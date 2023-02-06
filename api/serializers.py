@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User, Group, Permission
 
-from api.models import Address, PaymentDate, Militant, Core, Payment, PaymentDeclaration, DeclarationDate
+from api.models import Address, PaymentDate, Militant, Core, PaymentNorm, Payment, PaymentDeclaration, DeclarationDate
 
 
 class AddressSerializer(serializers.ModelSerializer):
@@ -15,6 +15,11 @@ class CoreSerializer(serializers.ModelSerializer):
         model = Core
         fields = ['code', 'name', 'municipality', 'province', 'district', 'political_area',
                   'sector', 'subordinate']
+                  
+class PaymentNormSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PaymentNorm
+        fields = '__all__'
 
 
 class PaymentSerializer(serializers.ModelSerializer):
@@ -27,8 +32,7 @@ class PaymentDeclarationSerializer(serializers.ModelSerializer):
     payments = PaymentSerializer(many=True, read_only=True)
     class Meta:
         model = PaymentDeclaration
-        exclude = ['militant', 'payment']
-
+        exclude = ['militant', 'payment', 'norm']
 
 class DeclarationDateSerializer(serializers.ModelSerializer):
     class Meta:
